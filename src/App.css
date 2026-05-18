@@ -105,3 +105,107 @@ button:disabled {
   border-radius: 12px;
   margin-bottom: 20px;
 }
+.primary-button {
+  background: #16a34a; /* green */
+  font-weight: bold;
+}
+.section-intro {
+  margin-bottom: 18px;
+}
+
+.challenge-list {
+  display: grid;
+  gap: 12px;
+  text-align: left;
+}
+
+.challenge {
+  background: #f3f4f6;
+  border-left: 6px solid #b91c1c;
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.challenge label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.challenge input {
+  width: 20px;
+  height: 20px;
+}
+
+.challenge span {
+  font-size: 15px;
+}
+.progress-summary {
+  background: #f9fafb;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 18px;
+}
+
+.progress-bar {
+  height: 14px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #16a34a;
+}
+
+.encouragement {
+  font-weight: bold;
+}
+.card h2 {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 6px;
+}
+
+.card h2::after {
+  content: "";
+  display: block;
+  width: 60%;
+  height: 4px;
+  background: #b91c1c; /* your red */
+  margin-top: 6px;
+  border-radius: 2px;
+}
+.card h2 {
+  color: #111827 !important;   /* force dark text */
+  opacity: 1 !important;       /* remove any fade */
+  font-weight: 800;
+  font-size: 28px;
+}
+.share-buttons {
+  display: grid;
+  gap: 10px;
+  margin-top: 15px;
+}
+.share-note {
+  font-size: 14px;
+  margin-top: 12px;
+  color: #4b5563;
+}
+.buttons button {
+  padding: 16px;
+  font-size: 18px;
+  background: #b91c1c;
+  color: white;
+  border-radius: 10px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.buttons button:hover,
+.buttons a:hover {
+  opacity: 0.9;
+}

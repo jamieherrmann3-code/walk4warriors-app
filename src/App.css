@@ -342,9 +342,8 @@ button:disabled {
 
 .hero-register-button {
   position: absolute;
-  left: 50%;
-  bottom: 24px;
-  transform: translateX(-50%);
+  right: 16px;
+  bottom: 12px;
   background: #dc2626;
   color: white !important;
   text-decoration: none;

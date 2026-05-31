@@ -164,9 +164,12 @@ function Track() {
   }
 
   return (
-    <div className="card">
-      <h2>Track My Walk</h2>
+    <div className="track-page">
+      <div className="page-title">
+        <h1>Track My Walk</h1>
+      </div>
 
+    <div className="card">
       <p className="tracking-intro">
         You’re walking beside a community that cares about our Veterans.
       </p>
@@ -212,8 +215,9 @@ function Track() {
         <button onClick={resetTracking} className="secondary-button">
           Reset
         </button>
-      </div>
+           </div>
     </div>
+  </div>
   );
 }
 

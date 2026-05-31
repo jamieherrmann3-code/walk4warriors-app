@@ -49,13 +49,16 @@ function Train() {
   }
 
   return (
-    <div className="card">
+  <div className="train-page">
+    <section className="card train-hero-card">
       <h2>Steps Toward September</h2>
 
       <p className="section-intro">
         Optional ideas to help you get moving — do what works for you.
       </p>
+    </section>
 
+    <section className="card">
       <div className="progress-summary">
         <p>
           {completedCount} of {weeklySteps.length} steps checked
@@ -127,8 +130,9 @@ function Train() {
           ))}
         </div>
       )}
-    </div>
-  );
+    </section>
+  </div>
+);
 }
 
 export default Train;

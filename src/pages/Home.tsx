@@ -34,9 +34,11 @@ function Home() {
           </h2>
 
           <p>
-            Join Veterans, families, friends, and supporters as we walk
-            together to raise awareness and support those who served.
-          </p>
+        Join Veterans, families, friends, and supporters as we walk together
+        to raise awareness of the tragic reality of Veteran suicide and support
+        Veterans in need through donations to local organizations serving our
+        Veteran community.
+        </p>
         </div>
       </section>
 

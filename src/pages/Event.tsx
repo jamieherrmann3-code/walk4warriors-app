@@ -1,4 +1,15 @@
+import { Browser } from "@capacitor/browser";
+
+const routeMapUrl =
+  "https://www.google.com/maps/d/viewer?mid=1mP3SbV3YzA9i2W_SO6apU3tHKerKIPE&usp=sharing";
+
 function Event() {
+  const openRouteMap = async () => {
+    await Browser.open({
+      url: routeMapUrl,
+    });
+  };
+
   return (
     <div className="event-page">
       <section className="card event-hero-card">
@@ -48,14 +59,13 @@ function Event() {
           View the Walk 4 Warriors route before event day.
         </p>
 
-        <a
-          href="https://www.google.com/maps/d/u/0/edit?mid=1mP3SbV3YzA9i2W_SO6apU3tHKerKIPE&usp=sharing"
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          type="button"
+          onClick={openRouteMap}
           className="primary-button"
         >
           Open Route Map
-        </a>
+        </button>
       </section>
 
       <section className="card">
@@ -66,8 +76,6 @@ function Event() {
           listen to your body, and take breaks as needed.
         </p>
       </section>
-
-    
     </div>
   );
 }

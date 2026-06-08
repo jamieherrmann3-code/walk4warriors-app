@@ -93,11 +93,25 @@ function Track() {
     return () => window.clearInterval(messageTimer);
   }, [tracking, paused]);
 
+  useEffect(() => {
+    if (!tracking || paused) return;
+
+    setMessage(encouragementMessages[encouragementIndex]);
+  }, [encouragementIndex, tracking, paused]);
+
   function startTracking() {
     if (!navigator.geolocation) {
       setMessage("GPS tracking is not supported on this device.");
       return;
     }
+
+    setTracking(true);
+    setPaused(false);
+    setDistance(0);
+    setElapsedSeconds(0);
+    setLastPosition(null);
+    setMessage("Starting GPS...");
+    setEncouragementIndex(0);
 
     const id = navigator.geolocation.watchPosition(
       (position) => {
@@ -107,7 +121,7 @@ function Track() {
         };
 
         setLastPosition((previousPosition) => {
-          if (previousPosition && !paused) {
+          if (previousPosition) {
             const miles = getDistanceMiles(previousPosition, newPosition);
 
             setDistance((currentDistance) => {
@@ -116,12 +130,12 @@ function Track() {
 
               if (milestoneMessage) {
                 setMessage(milestoneMessage);
-              } else {
-                setMessage(encouragementMessages[encouragementIndex]);
               }
 
               return updatedDistance;
             });
+          } else {
+            setMessage("GPS connected. Start walking.");
           }
 
           return newPosition;
@@ -133,19 +147,20 @@ function Track() {
       },
       {
         enableHighAccuracy: true,
-        maximumAge: 1000,
+        maximumAge: 0,
+        timeout: 10000,
       }
     );
 
     setWatchId(id);
-    setTracking(true);
-    setPaused(false);
-    setMessage(encouragementMessages[0]);
   }
 
   function togglePause() {
-    setPaused((currentPaused) => !currentPaused);
-    setMessage(paused ? "Tracking your walk." : "Tracking paused.");
+    setPaused((currentPaused) => {
+      const nextPaused = !currentPaused;
+      setMessage(nextPaused ? "Tracking paused." : "Tracking your walk.");
+      return nextPaused;
+    });
   }
 
   function resetTracking() {
@@ -169,55 +184,51 @@ function Track() {
         <h1>Track My Walk</h1>
       </div>
 
-    <div className="card">
-      <p className="tracking-intro">
-        You’re walking beside a community that cares about our Veterans.
-      </p>
+      <div className="card">
+        <p className="tracking-intro">
+          You’re walking beside a community that cares about our Veterans.
+        </p>
 
-      {tracking && !paused && (
-        <div className="live-indicator">
-          <span className="pulse-dot"></span>
-          <span>Walk in progress</span>
-        </div>
-      )}
-
-      <div className="tracker-stats">
-        <div>
-          <span className="stat-label">Distance</span>
-          <p className="distance">{distance.toFixed(2)} miles</p>
-        </div>
-
-        <div>
-          <span className="stat-label">Time</span>
-          <p className="distance">{formatTime(elapsedSeconds)}</p>
-        </div>
-      </div>
-
-      <p className="tracking-message">
-        {message || "Tap start when you begin walking."}
-      </p>
-
-      <div className="tracker-buttons">
-        <button onClick={startTracking} disabled={tracking && !paused}>
-          {!tracking
-            ? "Start Tracking"
-            : paused
-            ? "Resume Tracking"
-            : "Tracking..."}
-        </button>
-
-        {tracking && (
-          <button onClick={togglePause} className="secondary-button">
-            {paused ? "Resume" : "Pause"}
-          </button>
+        {tracking && !paused && (
+          <div className="live-indicator">
+            <span className="pulse-dot"></span>
+            <span>Walk in progress</span>
+          </div>
         )}
 
-        <button onClick={resetTracking} className="secondary-button">
-          Reset
-        </button>
-           </div>
+        <div className="tracker-stats">
+          <div>
+            <span className="stat-label">Distance</span>
+            <p className="distance">{distance.toFixed(2)} miles</p>
+          </div>
+
+          <div>
+            <span className="stat-label">Time</span>
+            <p className="distance">{formatTime(elapsedSeconds)}</p>
+          </div>
+        </div>
+
+        <p className="tracking-message">
+          {message || "Tap start when you begin walking."}
+        </p>
+
+        <div className="tracker-buttons">
+          <button onClick={startTracking} disabled={tracking}>
+            {!tracking ? "Start Tracking" : "Tracking..."}
+          </button>
+
+          {tracking && (
+            <button onClick={togglePause} className="secondary-button">
+              {paused ? "Resume" : "Pause"}
+            </button>
+          )}
+
+          <button onClick={resetTracking} className="secondary-button">
+            Reset
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
   );
 }
 

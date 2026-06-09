@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Position = {
   latitude: number;
   longitude: number;
+  accuracy: number;
 };
 
 const encouragementMessages = [
@@ -40,7 +41,19 @@ function formatTime(seconds: number) {
     .toString()
     .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
 }
+function formatPace(distance: number, elapsedSeconds: number) {
+  if (distance <= 0) {
+    return "--:-- / mile";
+  }
 
+  const secondsPerMile = elapsedSeconds / distance;
+  const minutes = Math.floor(secondsPerMile / 60);
+  const seconds = Math.floor(secondsPerMile % 60);
+
+  return `${minutes}:${seconds
+    .toString()
+    .padStart(2, "0")} / mile`;
+}
 function getMilestoneMessage(distance: number) {
   if (distance >= 11.18) {
     return "You reached an 18K distance — thank you for showing up with purpose.";
@@ -64,12 +77,19 @@ function getMilestoneMessage(distance: number) {
 function Track() {
   const [tracking, setTracking] = useState(false);
   const [paused, setPaused] = useState(false);
-  const [, setLastPosition] = useState<Position | null>(null);
   const [distance, setDistance] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [message, setMessage] = useState("");
+  const [, setGpsStatus] = useState("GPS not started");
   const [watchId, setWatchId] = useState<number | null>(null);
   const [encouragementIndex, setEncouragementIndex] = useState(0);
+
+  const lastPositionRef = useRef<Position | null>(null);
+  const pausedRef = useRef(false);
+
+  useEffect(() => {
+    pausedRef.current = paused;
+  }, [paused]);
 
   useEffect(() => {
     if (!tracking || paused) return;
@@ -105,50 +125,82 @@ function Track() {
       return;
     }
 
+    if (watchId !== null) {
+      navigator.geolocation.clearWatch(watchId);
+    }
+
     setTracking(true);
     setPaused(false);
     setDistance(0);
     setElapsedSeconds(0);
-    setLastPosition(null);
     setMessage("Starting GPS...");
+    setGpsStatus("Waiting for GPS location...");
     setEncouragementIndex(0);
+    lastPositionRef.current = null;
 
     const id = navigator.geolocation.watchPosition(
       (position) => {
-        const newPosition = {
+        const newPosition: Position = {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
         };
 
-        setLastPosition((previousPosition) => {
-          if (previousPosition) {
-            const miles = getDistanceMiles(previousPosition, newPosition);
+        setGpsStatus(
+          `GPS update received. Accuracy: ${Math.round(
+            newPosition.accuracy
+          )} meters`
+        );
 
-            setDistance((currentDistance) => {
-              const updatedDistance = currentDistance + miles;
-              const milestoneMessage = getMilestoneMessage(updatedDistance);
+        if (pausedRef.current) {
+          lastPositionRef.current = newPosition;
+          return;
+        }
 
-              if (milestoneMessage) {
-                setMessage(milestoneMessage);
-              }
+        const previousPosition = lastPositionRef.current;
 
-              return updatedDistance;
-            });
-          } else {
-            setMessage("GPS connected. Start walking.");
+        if (!previousPosition) {
+          lastPositionRef.current = newPosition;
+          setMessage("GPS connected. Start walking.");
+          return;
+        }
+
+        const miles = getDistanceMiles(previousPosition, newPosition);
+
+       // Ignore only very tiny GPS noise.
+       if (miles < 0.002) {
+          return;
+       }
+
+        // Ignore huge GPS jumps.
+        if (miles > 0.25) {
+          lastPositionRef.current = newPosition;
+          setGpsStatus("GPS jump ignored. Keep walking.");
+          return;
+        }
+
+        setDistance((currentDistance) => {
+          const updatedDistance = currentDistance + miles;
+          const milestoneMessage = getMilestoneMessage(updatedDistance);
+
+          if (milestoneMessage) {
+            setMessage(milestoneMessage);
           }
 
-          return newPosition;
+          return updatedDistance;
         });
+
+        lastPositionRef.current = newPosition;
       },
-      () => {
+      (error) => {
+        setGpsStatus(`GPS error: ${error.message}`);
         setMessage("Unable to access GPS. Check location permissions.");
         setTracking(false);
       },
       {
         enableHighAccuracy: true,
         maximumAge: 0,
-        timeout: 10000,
+        timeout: 20000,
       }
     );
 
@@ -170,12 +222,13 @@ function Track() {
 
     setTracking(false);
     setPaused(false);
-    setLastPosition(null);
     setDistance(0);
     setElapsedSeconds(0);
     setMessage("Thanks for getting out and walking today.");
+    setGpsStatus("GPS not started");
     setWatchId(null);
     setEncouragementIndex(0);
+    lastPositionRef.current = null;
   }
 
   return (
@@ -206,12 +259,17 @@ function Track() {
             <span className="stat-label">Time</span>
             <p className="distance">{formatTime(elapsedSeconds)}</p>
           </div>
-        </div>
+          <div>
+            <span className="stat-label">Average Pace</span>
+            <p className="distance">{formatPace(distance, elapsedSeconds)}</p>
+          </div>
+      </div>
 
         <p className="tracking-message">
           {message || "Tap start when you begin walking."}
         </p>
 
+      
         <div className="tracker-buttons">
           <button onClick={startTracking} disabled={tracking}>
             {!tracking ? "Start Tracking" : "Tracking..."}
